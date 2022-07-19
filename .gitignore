@@ -1,0 +1,6 @@
+data/
+model/
+logs/
+__MACOSX/
+__pycache__/
+face2anime/
