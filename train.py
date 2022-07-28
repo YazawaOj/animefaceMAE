@@ -7,13 +7,15 @@ import models
 TRAIN_DATA_DIR = 'data/face2animetrain'
 VALID_DATA_DIR = 'data/face2animetest'
 BATCH_SIZE = 256
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-PATCH_SIZE = 16
-EPOCHS = 600
-MASKRATE = 50
-modelname = 'MAE'+str(MASKRATE)+'_'
-logfile = 'logs/adamw'+str(MASKRATE)+'.txt'
-fo = open(logfile,'w+')
+device = torch.device('cuda:2' if torch.cuda.is_available() else 'cpu')
+PATCH_SIZE = 8
+EMBED_DIM = 192
+EPOCHS = 400
+SAVING = 40
+MASKRATE = 75
+modelname = 'P8MAE'+str(MASKRATE)
+logfile = 'logs/'+modelname
+fo = open(logfile+'.txt','w+')
 torch.random.manual_seed(888)
 #load image data
 
@@ -30,7 +32,7 @@ print('validation set loaded: '+str(len(valid_dataset)))
 
 #model
 
-MAE = models.MAEViT(maskrate=MASKRATE/100)
+MAE = models.MAEViT(maskrate=MASKRATE/100,patch_size=PATCH_SIZE,encoder_embed_dim=EMBED_DIM,decoder_embed_dim=EMBED_DIM)
 MAE.to(device)
 optimizer = torch.optim.AdamW(MAE.parameters(), lr=0.0005, betas=(0.9, 0.95))
 
@@ -65,12 +67,12 @@ for i in range(EPOCHS):
         valid_loss_list.append(valid_loss/mb)
         fo.write('epoch={:3d}, valid_loss={:5f}\n'.format(i,valid_loss/mb))
         print(' epoch={:3d}, valid_loss={:5f}'.format(i,valid_loss/mb))
-    if i%50==49:
-        torch.save(MAE,'model/'+modelname+str(i+1)+'.pkl')
+    if i%SAVING==(SAVING-1):
+        torch.save(MAE,'model/'+modelname+'_'+str(i+1)+'.pkl')
 
 plt.plot(train_loss_list, label='train loss')
 plt.plot(valid_loss_list, label='valid loss')
 plt.legend()
 plt.show()
-plt.savefig('MAE'+str(MASKRATE)+'.png')
+plt.savefig(logfile+'.png')
 fo.close()

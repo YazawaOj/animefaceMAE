@@ -92,7 +92,7 @@ class MAEViT(nn.Module):
                  norm_layer=nn.LayerNorm, maskrate=0.75):
         super().__init__()
         self.patch_size = patch_size
-        self.patch_embed = PatchEmbed()
+        self.patch_embed = PatchEmbed(patch_size=patch_size,embed_dim=encoder_embed_dim)
         self.num_patch = int((img_size//patch_size)**2)
         self.encoder_pos_embed = nn.Parameter(torch.zeros((1, self.num_patch, encoder_embed_dim)), requires_grad=False)
         self.decoder_pos_embed = nn.Parameter(torch.zeros((1, self.num_patch, decoder_embed_dim)), requires_grad=False)
@@ -254,9 +254,10 @@ class MAEViT(nn.Module):
         pred_img = self.unpatchify(pred)
         return mask_img,pred_img
 
-#device = 'cuda:0'
-#x = torch.ones((1,3,128,128)).to(device)
-#MAE = MAEViT(maskrate=0.75)
-#MAE.to(device)
-#x = MAE(x)
-#print(x[1].shape)
+if __name__ == '__main__':
+    device = 'cuda:0'
+    x = torch.ones((1,3,128,128)).to(device)
+    MAE = MAEViT(maskrate=0.75,patch_size=8,encoder_embed_dim=192,decoder_embed_dim=192)
+    MAE.to(device)
+    x = MAE(x)
+    print(x[1].shape)

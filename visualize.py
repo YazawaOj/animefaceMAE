@@ -1,14 +1,19 @@
 import torch
 import matplotlib.pyplot as plt
-import models
 from PIL import Image
 import torchvision.transforms.functional as TF
 
-device = 'cuda:0'
-MAE = torch.load('model/MAE75_200.pkl')
+#torch.random.manual_seed(888)
+
+device = 'cuda:1'
+MAE = torch.load('model/P8MAE75_600.pkl') #load model
 MAE.to(device)
-x = Image.open('data/face2animetest/testB/39140.jpg').resize((128,128))
-ori_img = Image.open('data/face2animetest/testB/39140.jpg').resize((128,128))
+IMAGEFILE = 'data/face2animetest/testB/1941088.jpg'
+MASKRATE1 = 75 #masking rate of the original model
+MASKRATE2 = 75 #masking rate of the visualization
+MAE.maskrate = MASKRATE2/100
+x = Image.open(IMAGEFILE).resize((128,128))
+ori_img = Image.open(IMAGEFILE).resize((128,128))
 x = TF.to_tensor(x).to(device)
 ori_img = TF.to_tensor(ori_img).to(device)
 x.unsqueeze_(0)
@@ -21,6 +26,4 @@ plt.subplot(1,3,2)
 plt.imshow(torch.einsum('chw->hwc', mask_img).cpu())
 plt.subplot(1,3,3)
 plt.imshow(torch.einsum('chw->hwc', pred_img).detach().cpu())
-plt.savefig('39140.png')
-
-#print(mask_img.shape, pred_img.shape)
+plt.savefig('vis_{:.1f}_{:.1f}.png'.format(MASKRATE1,MASKRATE2))
